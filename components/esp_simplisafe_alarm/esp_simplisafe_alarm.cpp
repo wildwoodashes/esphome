@@ -10,7 +10,9 @@ String strCommand;
 bool change_detected;        //This makes sure mode only changes once                                                                                                                                                               
 bool current_status;      //Holds the current status of the alarm                                                                                                                                                                   
 bool read_status;         //temp variable                                                                                                                                                                                           
-byte status_store[2];     //Array of current[0] and last[1] values of the sensor                                                                                                                                                    
+byte status_store[2];     //Array of current[0] and last[1] values of the sensor           
+bool armed_bool;
+bool warning_bool;                                                                                                                                         
 int warning_mode_detect; //Detect warning mode                                                                                                                                                                                      
 unsigned long debounce_millis; //needed to properly debounce the pushbutton inputs                                                                                                                                                  
 unsigned long last_change_millis; //Blinking light indicates warning, not status. Need to track  
@@ -21,18 +23,26 @@ void esp_simplisafe_alarm::setup() {
     pinMode(PIN_SENSOR_1, INPUT); // This is the photosensor
 
     // Set initial conditions for detection logic
-    this->armed_sensor_->publish_state(DISARMED);
-    this->warning_sensor_->publish_state(INACTIVE);
+    armed_bool = DISARMED;
+    warning_bool = INACTIVE;
+    this->armed_sensor_->publish_state(armed_bool);
+    this->warning_sensor_->publish_state(warning_bool);
     change_detected = 1;
      
     Serial.begin(74880); // Used for sending print commands over serial (debugging)
     ESP_LOGI(TAG, "SimpliSafe Alarm component setup complete.");
 }   
-  
+
 void esp_simplisafe_alarm::update() {
+    ESP_LOGI(TAG, "SimpliSafe Alarm poll v7"); // TODO remove this
+    this->armed_sensor_->publish_state(armed_bool);
+    this->warning_sensor_->publish_state(warning_bool);
+}
+  
+void esp_simplisafe_alarm::loop() {
     // This will be called very often after setup time.
     // think of it as the loop() call in Arduino
-    ESP_LOGI(TAG, "SimpliSafe Alarm poll v5"); // TODO remove this
+    //ESP_LOGI(TAG, "SimpliSafe Alarm poll v6"); // TODO remove this
 
     read_status = digitalRead(PIN_SENSOR_1); // read the input pin   
     if (read_status != status_store[LAST])      // only act if the button changed state
@@ -57,8 +67,8 @@ void esp_simplisafe_alarm::update() {
     {
       warning_mode_detect = 0;
       change_detected = 0;
-      this->armed_sensor_->publish_state(ARMED);
-      this->warning_sensor_->publish_state(INACTIVE);
+      armed_bool = ARMED;
+      warning_bool = INACTIVE;
       ESP_LOGI(TAG, "SimpliSafe armed and normal");
 
     }
@@ -66,14 +76,14 @@ void esp_simplisafe_alarm::update() {
     {
       warning_mode_detect = 0;
       change_detected = 0;
-      this->armed_sensor_->publish_state(DISARMED);
-      this->warning_sensor_->publish_state(INACTIVE);
+      armed_bool = DISARMED;
+      warning_bool = INACTIVE;
       ESP_LOGI(TAG, "SimpliSafe disarmed and normal");
     }
     else if(change_detected && ((warning_mode_detect&0x1F) == 0xF)){
       // LED has toggled 4 times since an aramed/disarmed was stable, this is warning, flag it as such
       change_detected = 0;
-      this->warning_sensor_->publish_state(ACTIVE);
+      warning_bool = ACTIVE;
       ESP_LOGI(TAG, "SimpliSafe warning set");
     }
 }

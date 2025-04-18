@@ -29,6 +29,7 @@ class esp_simplisafe_alarm : public PollingComponent {
     // Standard component functions to override
     void setup() override;
     void update() override;
+    void loop() override;
     void dump_config() override;
     
     void set_armed_sensor  (esphome::binary_sensor::BinarySensor *sensor) {
