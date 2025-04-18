@@ -15,7 +15,7 @@ int warning_mode_detect; //Detect warning mode
 unsigned long debounce_millis; //needed to properly debounce the pushbutton inputs                                                                                                                                                  
 unsigned long last_change_millis; //Blinking light indicates warning, not status. Need to track  
  
-void esp_simplisafe_alarm::setup() override {
+void esp_simplisafe_alarm::setup() {
     ESP_LOGI(TAG, "Setting up SimpliSafe Alarm component...");
     //Configure GPIO for monitoring
     pinMode(PIN_SENSOR_1, INPUT); // This is the photosensor
@@ -31,7 +31,7 @@ void esp_simplisafe_alarm::setup() override {
     ESP_LOGI(TAG, "SimpliSafe Alarm component setup complete.");
 }   
   
-void esp_simplisafe_alarm::update() override {
+void esp_simplisafe_alarm::update() {
     ESP_LOGD(TAG, "Polling SimpliSafe alarm status..."); // TODO Need to remove this later
     // This will be called very often after setup time.
     // think of it as the loop() call in Arduino
