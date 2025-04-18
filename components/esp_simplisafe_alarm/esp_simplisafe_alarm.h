@@ -21,6 +21,7 @@
 
 static const char* const TAG = "espSimplisafeAlarm";
 
+// Namesapce definitions
 namespace esphome {
 namespace espSimplisafeAlarm {
     
@@ -40,7 +41,7 @@ class esp_simplisafe_alarm : public PollingComponent {
     }
 
   protected:
-    # Internal fields definition    
+    // Internal fields definition    
     esphome::binary_sensor::BinarySensor *armed_sensor_{nullptr};
     esphome::binary_sensor::BinarySensor *warning_sensor_{nullptr};
 };
