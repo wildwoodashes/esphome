@@ -27,9 +27,11 @@ namespace espSimplisafeAlarm {
     
 class esp_simplisafe_alarm : public PollingComponent {
 
-  public:
-     // Constructor
-    void esp_simplisafe_alarm(void);
+  public:    
+    // Standard component functions to override
+    void setup() override;
+    void update() override;
+    void dump_config() override;
     
     void set_armed_sensor  (esphome::binary_sensor::BinarySensor *sensor) {
         this->armed_sensor_ = sensor;
@@ -37,11 +39,6 @@ class esp_simplisafe_alarm : public PollingComponent {
     void set_warning_sensor(esphome::binary_sensor::BinarySensor *sensor) {
         this->warning_sensor_ = sensor;
     }
-    
-    // Standard component functions to override
-    void setup() override;
-    void update() override;
-    void dump_config() override;
 
   protected:
     # Internal fields definition    
