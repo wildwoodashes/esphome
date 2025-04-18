@@ -1,0 +1,39 @@
+# This is the configuration file for the espSimplisafeAlarm external component.
+# It defines the YAML structure and how it maps to the C++ code.
+
+# This is the top-level key users will use in their device config.
+# IT MUST MATCH THE DIRECTORY NAME AND THE 'component:' NAME IN YOUR DEVICE YAML.
+esp_simplisafe_alarm:
+  # These keys define component metadata and map to the C++ class/namespace.
+  COMPONENT_TYPE: polling_component
+  class: esp_simplisafe_alarm
+  cpp_namespace: espSimplisafeAlarm
+  uses_platformio: yes
+
+  # This defines dependencies on other standard ESPhome components.
+  DEPENDENCIES:
+    - binary_sensor
+
+  # THIS IS THE CRITICAL PART - THE CONFIGURATION SCHEMA.
+  # It must be a direct child of the top-level component key (esp_simplisafe_alarm).
+  # Check the indentation carefully!
+  config_schema: # <-- Make sure this key is indented correctly under 'esp_simplisafe_alarm'
+
+    # Define the schema for the 'armed_home' configuration option.
+    # This defines what properties 'armed_home' can have in the user's YAML.
+    # It's indented under 'config_schema'.
+    armed:
+      # This includes the standard schema for binary sensors.
+      # This is indented under 'armed_home'.
+      <<: !include ../binary_sensor/binary_sensor.yaml
+      # This maps this YAML key to the C++ setter method.
+      # This is indented under 'armed_home'.
+      __call__: set_armed_home_sensor
+
+    # Define the schema for the 'armed_away' configuration option.
+    # This is also indented under 'config_schema'.
+    warning:
+      # Indented under 'armed_away'.
+      <<: !include ../binary_sensor/binary_sensor.yaml
+      # Indented under 'armed_away'.
+      __call__: set_armed_away_sensor
