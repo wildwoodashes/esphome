@@ -1,5 +1,7 @@
 #include "esphome.h"                                                                                                                                                                                                                
 #include "esp_simplisafe_alarm.h"    
+#include "esphome/core/log.h" // Included again for safety, good practice
+#include "esphome/core/hal.h" // Required for delay() or other HAL functions
 
 namespace esphome {
 namespace espSimplisafeAlarm {
@@ -11,9 +13,10 @@ bool read_status;         //temp variable
 byte status_store[2];     //Array of current[0] and last[1] values of the sensor                                                                                                                                                    
 int warning_mode_detect; //Detect warning mode                                                                                                                                                                                      
 unsigned long debounce_millis; //needed to properly debounce the pushbutton inputs                                                                                                                                                  
-unsigned long last_change_millis; //Blinking light indicates warning, not status. Need to track   
-    
+unsigned long last_change_millis; //Blinking light indicates warning, not status. Need to track  
+ 
 void esp_simplisafe_alarm::setup() override {
+    ESP_LOGI(TAG, "Setting up SimpliSafe Alarm component...");
     //Configure GPIO for monitoring
     pinMode(PIN_SENSOR_1, INPUT); // This is the photosensor
     pinMode(WARNING_PIN, OUTPUT); // This is looped back to the contact sensor
@@ -25,9 +28,11 @@ void esp_simplisafe_alarm::setup() override {
     change_detected = 1;
      
     Serial.begin(74880); // Used for sending print commands over serial (debugging)
+    ESP_LOGI(TAG, "SimpliSafe Alarm component setup complete.");
 }   
   
-void esp_simplisafe_alarm::loop() override {
+void esp_simplisafe_alarm::update() override {
+    ESP_LOGD(TAG, "Polling SimpliSafe alarm status..."); // TODO Need to remove this later
     // This will be called very often after setup time.
     // think of it as the loop() call in Arduino
     read_status = digitalRead(PIN_SENSOR_1); // read the input pin   
@@ -54,8 +59,12 @@ void esp_simplisafe_alarm::loop() override {
       Serial.printf("Drive alarm pin low, time = %d\n", last_change_millis);
       warning_mode_detect = 0;
       change_detected = 0;
+      /*
       digitalWrite(WARNING_PIN, INACTIVE);    // Indicate to hub that sensor is armed
       digitalWrite(ARMING_PIN, ARMED); // Indicate to hub that no warning
+      */
+      this->armed_sensor_->publish_state(ARMED);
+      this->warning_sensor_->publish_state(INACTIVE);
 
     }
     else if (change_detected && status_store[CURRENT] == DISARMED && (millis() - last_change_millis >= MIN_ARM_TIME)) 
@@ -63,14 +72,19 @@ void esp_simplisafe_alarm::loop() override {
       Serial.printf("Drive alarm pin high, time = %d\n", last_change_millis);
       warning_mode_detect = 0;
       change_detected = 0;
+      /*
       digitalWrite(WARNING_PIN, INACTIVE); // Indicate to hub that sensor is unarmed
       digitalWrite(ARMING_PIN, DISARMED); // Indicate to hub that no warning
+      */
+      this->armed_sensor_->publish_state(DISARMED);
+      this->warning_sensor_->publish_state(INACTIVE);
     }
     else if(change_detected && ((warning_mode_detect&0x1F) == 0xF)){
       // LED has toggled 4 times since an aramed/disarmed was stable, this is warning, flag it as such
       Serial.printf("Drive warning to active, status = %x\n", warning_mode_detect);
       change_detected = 0;
-      digitalWrite(WARNING_PIN, ACTIVE); // Indicate to hub that warning is active
+      //digitalWrite(WARNING_PIN, ACTIVE); // Indicate to hub that warning is active
+      this->warning_sensor_->publish_state(ACTIVE);
     }
 }
 
