@@ -32,6 +32,8 @@ void esp_simplisafe_alarm::setup() {
 void esp_simplisafe_alarm::update() {
     // This will be called very often after setup time.
     // think of it as the loop() call in Arduino
+    ESP_LOGI(TAG, "SimpliSafe Alarm poll v4"); // TODO remove this
+
     read_status = digitalRead(PIN_SENSOR_1); // read the input pin   
     if (read_status != status_store[LAST])      // only act if the button changed state
     {
