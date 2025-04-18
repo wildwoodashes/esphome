@@ -22,7 +22,6 @@
 static const char* const TAG = "espSimplisafeAlarm";
 
 # Namespace definition
-namespace esphome {
 namespace espSimplisafeAlarm {
     
 class esp_simplisafe_alarm : public PollingComponent {
@@ -47,4 +46,3 @@ class esp_simplisafe_alarm : public PollingComponent {
 };
 
 }  // namespace espSimplisafeAlarm
-}  // namespace esphome
