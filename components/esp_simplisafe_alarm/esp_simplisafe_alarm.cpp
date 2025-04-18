@@ -34,7 +34,7 @@ void esp_simplisafe_alarm::setup() {
 }   
 
 void esp_simplisafe_alarm::update() {
-    ESP_LOGI(TAG, "SimpliSafe Alarm poll v7"); // TODO remove this
+    //ESP_LOGI(TAG, "SimpliSafe Alarm poll v8"); // TODO remove this
     this->armed_sensor_->publish_state(armed_bool);
     this->warning_sensor_->publish_state(warning_bool);
 }
@@ -42,8 +42,6 @@ void esp_simplisafe_alarm::update() {
 void esp_simplisafe_alarm::loop() {
     // This will be called very often after setup time.
     // think of it as the loop() call in Arduino
-    //ESP_LOGI(TAG, "SimpliSafe Alarm poll v6"); // TODO remove this
-
     read_status = digitalRead(PIN_SENSOR_1); // read the input pin   
     if (read_status != status_store[LAST])      // only act if the button changed state
     {
@@ -83,6 +81,7 @@ void esp_simplisafe_alarm::loop() {
     else if(change_detected && ((warning_mode_detect&0x1F) == 0xF)){
       // LED has toggled 4 times since an aramed/disarmed was stable, this is warning, flag it as such
       change_detected = 0;
+      armed_bool = DISARMED; // This may not be true, but seems the most cautious. Armed state is actually unknown. 
       warning_bool = ACTIVE;
       ESP_LOGI(TAG, "SimpliSafe warning set");
     }
