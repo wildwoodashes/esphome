@@ -32,7 +32,7 @@ void esp_simplisafe_alarm::setup() {
 void esp_simplisafe_alarm::update() {
     // This will be called very often after setup time.
     // think of it as the loop() call in Arduino
-    ESP_LOGI(TAG, "SimpliSafe Alarm poll v4"); // TODO remove this
+    ESP_LOGI(TAG, "SimpliSafe Alarm poll v5"); // TODO remove this
 
     read_status = digitalRead(PIN_SENSOR_1); // read the input pin   
     if (read_status != status_store[LAST])      // only act if the button changed state
@@ -55,7 +55,6 @@ void esp_simplisafe_alarm::update() {
     // Determine how to set the Contacts
     if (change_detected && (status_store[CURRENT] == ARMED) && (millis() - last_change_millis >= MIN_ARM_TIME)) 
     {
-      Serial.printf("Drive alarm pin low, time = %d\n", last_change_millis);
       warning_mode_detect = 0;
       change_detected = 0;
       this->armed_sensor_->publish_state(ARMED);
@@ -65,7 +64,6 @@ void esp_simplisafe_alarm::update() {
     }
     else if (change_detected && status_store[CURRENT] == DISARMED && (millis() - last_change_millis >= MIN_ARM_TIME)) 
     {
-      Serial.printf("Drive alarm pin high, time = %d\n", last_change_millis);
       warning_mode_detect = 0;
       change_detected = 0;
       this->armed_sensor_->publish_state(DISARMED);
@@ -74,7 +72,6 @@ void esp_simplisafe_alarm::update() {
     }
     else if(change_detected && ((warning_mode_detect&0x1F) == 0xF)){
       // LED has toggled 4 times since an aramed/disarmed was stable, this is warning, flag it as such
-      Serial.printf("Drive warning to active, status = %x\n", warning_mode_detect);
       change_detected = 0;
       this->warning_sensor_->publish_state(ACTIVE);
       ESP_LOGI(TAG, "SimpliSafe warning set");
