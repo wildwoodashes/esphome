@@ -31,13 +31,6 @@ class esp_simplisafe_alarm : public PollingComponent {
     void update() override;
     void loop() override;
     void dump_config() override;
-    
-    void set_armed_sensor  (esphome::binary_sensor::BinarySensor *sensor) {
-        this->armed_sensor_ = sensor;
-    }
-    void set_warning_sensor(esphome::binary_sensor::BinarySensor *sensor) {
-        this->warning_sensor_ = sensor;
-    }
 
   protected:
     // Internal fields definition    
