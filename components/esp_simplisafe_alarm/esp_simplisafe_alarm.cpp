@@ -19,12 +19,10 @@ void esp_simplisafe_alarm::setup() {
     ESP_LOGI(TAG, "Setting up SimpliSafe Alarm component...");
     //Configure GPIO for monitoring
     pinMode(PIN_SENSOR_1, INPUT); // This is the photosensor
-    pinMode(WARNING_PIN, OUTPUT); // This is looped back to the contact sensor
-    pinMode(ARMING_PIN, OUTPUT); // This is looped back to the other contact sensor
 
     // Set initial conditions for detection logic
-    digitalWrite(WARNING_PIN, INACTIVE); // Set both contacts to open initially
-    digitalWrite(ARMING_PIN, DISARMED);
+    this->armed_sensor_->publish_state(DISARMED);
+    this->warning_sensor_->publish_state(INACTIVE);
     change_detected = 1;
      
     Serial.begin(74880); // Used for sending print commands over serial (debugging)
@@ -32,7 +30,6 @@ void esp_simplisafe_alarm::setup() {
 }   
   
 void esp_simplisafe_alarm::update() {
-    ESP_LOGD(TAG, "Polling SimpliSafe alarm status..."); // TODO Need to remove this later
     // This will be called very often after setup time.
     // think of it as the loop() call in Arduino
     read_status = digitalRead(PIN_SENSOR_1); // read the input pin   
@@ -59,12 +56,9 @@ void esp_simplisafe_alarm::update() {
       Serial.printf("Drive alarm pin low, time = %d\n", last_change_millis);
       warning_mode_detect = 0;
       change_detected = 0;
-      /*
-      digitalWrite(WARNING_PIN, INACTIVE);    // Indicate to hub that sensor is armed
-      digitalWrite(ARMING_PIN, ARMED); // Indicate to hub that no warning
-      */
       this->armed_sensor_->publish_state(ARMED);
       this->warning_sensor_->publish_state(INACTIVE);
+      ESP_LOGI(TAG, "SimpliSafe armed and normal");
 
     }
     else if (change_detected && status_store[CURRENT] == DISARMED && (millis() - last_change_millis >= MIN_ARM_TIME)) 
@@ -72,19 +66,16 @@ void esp_simplisafe_alarm::update() {
       Serial.printf("Drive alarm pin high, time = %d\n", last_change_millis);
       warning_mode_detect = 0;
       change_detected = 0;
-      /*
-      digitalWrite(WARNING_PIN, INACTIVE); // Indicate to hub that sensor is unarmed
-      digitalWrite(ARMING_PIN, DISARMED); // Indicate to hub that no warning
-      */
       this->armed_sensor_->publish_state(DISARMED);
       this->warning_sensor_->publish_state(INACTIVE);
+      ESP_LOGI(TAG, "SimpliSafe disarmed and normal");
     }
     else if(change_detected && ((warning_mode_detect&0x1F) == 0xF)){
       // LED has toggled 4 times since an aramed/disarmed was stable, this is warning, flag it as such
       Serial.printf("Drive warning to active, status = %x\n", warning_mode_detect);
       change_detected = 0;
-      //digitalWrite(WARNING_PIN, ACTIVE); // Indicate to hub that warning is active
       this->warning_sensor_->publish_state(ACTIVE);
+      ESP_LOGI(TAG, "SimpliSafe warning set");
     }
 }
 

@@ -4,11 +4,9 @@
 #include "esphome/components/binary_sensor/binary_sensor.h" // Required for BinarySensor
 #include "esphome/core/log.h" // Required for logging
 
-#define PIN_CONTACT_1             D1  //Armed                                                                                                                                                                                       
-#define PIN_CONTACT_2             D3  //Warning                                                                                                                                                                                     
+// This is the photosensor pin
 #define PIN_SENSOR_1              D2                                                                                                                                                                                                
-#define WARNING_PIN               D5                                                                                                                                                                                                
-#define ARMING_PIN                D6                                                                                                                                                                                                
+                                                                                                                                                                                            
                                                                                                                                                                                                                                     
 #define MIN_DEBOUNCE_TIME 50 //Prevent any bouncing on changes                                                                                                                                                                      
 #define MIN_ARM_TIME 3000 //Track to make sure this isn't a warning                                                                                                                                                                 
